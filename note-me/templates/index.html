@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes App</title>
+    <style>
+        body {
+            background: linear-gradient(to right, #fcf6b1, #bda13b);
+            font-family: Arial, sans-serif; /* Police de caractères */
+            margin: 0; /* Supprime les marges par défaut du body */
+            display: flex; /* Utilisation de flexbox pour centrer le contenu */
+            justify-content: center; /* Centrage horizontal */
+            align-items: center; /* Centrage vertical */
+            height: 100vh; /* Hauteur de la page égale à la hauteur de la fenêtre */
+            position: relative; /* Position relative pour positionner l'image absolument */
+        }
+
+        .container {
+            display: flex;
+            justify-content: space-between;
+            width: 90%;
+            height: 80%;
+            background-color: transparent;
+        }
+
+        .card {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            position: relative;
+        }
+
+        .card h2 {
+            color: #bd9642; /* Couleur du titre */
+            font-size: 24px; /* Taille de police du titre */
+            margin-bottom: 10px; /* Espacement en bas du titre */
+        }
+
+        /* Style pour le texte à l'intérieur de la carte */
+        .card h3 {
+            color: #333333; /* Couleur du texte */
+            font-size: 16px; /* Taille de police */
+            line-height: 1.5; /* Hauteur de ligne */
+        }
+        .form-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 300px; /* Hauteur spécifique pour la carte de formulaire */
+        }
+
+        .form-container label {
+            margin-bottom: 10px;
+            color: #333333;
+        }
+
+        .form-container input[type="text"],
+        .form-container textarea {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            width: 90%;
+        }
+
+        .form-container .add-note-btn {
+            position: absolute; /* Positionnement absolu */
+            bottom: -25px; /* Déplacement vers le bas pour être à moitié à l'extérieur de la carte */
+            left: 50%; /* Déplacement horizontal pour être au centre */
+            transform: translateX(-50%); /* Ajustement pour centrer le cadre */
+            background-color: #ffffff; /* Couleur de fond du cadre */
+            border-radius: 50%; /* Forme ronde */
+            width: 50px; /* Largeur du cadre */
+            height: 50px; /* Hauteur du cadre */
+            display: flex; /* Utilisation de flexbox pour centrer le bouton */
+            justify-content: center; /* Centrage horizontal */
+            align-items: center; /* Centrage vertical */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Ombre */
+            border: none;
+        }
+
+        .form-container .add-note-btn img {
+            width: 30px; /* Taille de l'image */
+            height: 30px;
+        }
+
+        .form-container .add-note-btn:hover {
+            background-color: #f0f0f0;
+        }
+
+        .notes-slider {
+            width: calc(55% - 40px); /* Taille de la liste des notes avec un espace de 40px par rapport à la carte de formulaire */
+            overflow-y: auto;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        .note-card {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease; /* Ajout de transition pour un effet d'animation fluide */
+            overflow: hidden; /* Empêcher le texte de déborder */
+            display: flex; /* Utilisation de flexbox pour aligner le bouton de suppression */
+            justify-content: space-between; /* Aligner les éléments sur l'axe horizontal */
+            align-items: center; /* Centrer verticalement les éléments */
+        }
+
+        .note-card:hover {
+            background-color: #f0f0f0;
+        }
+
+        .note-card.expanded {
+            height: auto !important; /* Définir la hauteur à auto pour permettre l'expansion */
+        }
+
+        .note-card.expanded p {
+            display: block !important; /* Afficher le contenu complet */
+            overflow: auto; /* Ajouter une barre de défilement si nécessaire */
+        }
+
+        .note-card.expanded h3::after {
+            content: ' - Cliquez pour réduire'; /* Ajout d'un indicateur pour réduire la carte */
+            color: #999;
+            font-size: 14px;
+        }
+        .bottom-left-image {
+            position: absolute; /* Positionnement absolu */
+            bottom: 0; /* Coller en bas de la fenêtre */
+            left: 0; /* Coller à gauche de la fenêtre */
+            width: 300px; /* Largeur de l'image */
+            height: auto; /* Hauteur automatique proportionnelle */
+            margin: 20px; /* Marge de 20px à partir du bord de la fenêtre */
+        }
+
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card form-container">
+            <h2 style="margin-bottom: 20px;">Ajouter une note</h2>
+            <form id="addNoteForm" action="/add_note" method="post">
+                <label for="titre">Titre:</label>
+                <input type="text" id="titre" name="titre" placeholder="Entrez le titre de la note">
+                <label for="contenu">Contenu:</label>
+                <textarea id="contenu" name="contenu" placeholder="Entrez le contenu de la note"></textarea>
+                <button class="add-note-btn" type="submit"><img src="https://icon-library.com/images/add-icon-png/add-icon-png-0.jpg" alt="Ajouter"></button>
+            </form>
+        </div>
+
+        <div class="card notes-slider" id="notesSlider">
+            <h2>Liste des notes</h2>
+            {% for note in notes %}
+            <div class="note-card" data-note-id="{{ note.id }}" onclick="expandCard(this)">
+                <h3>{{ note.titre }}</h3>
+                <p style="display: none;">{{ note.contenu }}</p> <!-- Contenu caché initialement -->
+                <form action="/delete_note/{{ loop.index0 }}" method="post">
+                    <button type="submit" style="padding: 0; border: none; background: none;"><img src="https://www.svgrepo.com/show/314822/trash-alt-solid.svg" alt="Supprimer" width="30" height="30"></button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <!-- Image affichée en bas à gauche de l'écran -->
+    <a href="https://github.com/Xera-Dev"><img src="https://i.postimg.cc/HWX87v2g/made-by-xera.png" alt="Image" class="bottom-left-image"></a>
+    <script>
+        function expandCard(card) {
+            card.classList.toggle('expanded'); // Ajoute ou supprime la classe 'expanded'
+        }
+
+        function deleteNote(event) {
+            event.stopPropagation(); // Empêche le clic de se propager à la carte parente
+            const noteId = event.target.closest('.note-card').dataset.noteId; // Récupère l'identifiant de la note
+            // Envoyer une requête de suppression à votre serveur en utilisant l'identifiant de la note
+            fetch('/delete_note/' + noteId, { method: 'DELETE' })
+                .then(response => {
+                    if (response.ok) {
+                        // Supprimer la note de l'interface utilisateur si la suppression réussit
+                        event.target.closest('.note-card').remove();
+                        alert("Note supprimée !");
+                    } else {
+                        alert("Une erreur s'est produite lors de la suppression de la note.");
+                    }
+                })
+                .catch(error => console.error('Erreur lors de la suppression de la note:', error));
+        }
+    </script>
+</body>
+</html>
