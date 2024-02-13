@@ -5,7 +5,9 @@
 # Fonctionnalités :
 
 **Création de notes :** Ajoutez facilement de nouvelles notes avec une interface de formulaire simple.
+
 **Gestion des notes :** Organisez et supprimez les notes selon vos besoins.
+
 **Interface conviviale :** Design intuitif pour une expérience de prise de notes fluide.
 
 # Utilisation :
